@@ -1,0 +1,73 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Docker Compose",
+            "type": "shell",
+            "command": "docker compose -f docker-compose.yml up --build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build"
+            },
+            "options": {
+                "shell": {
+                    "executable": "powershell.exe",
+                    "args": [
+                        "-NoExit",
+                        "-Command"
+                    ]
+                },
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Compile into .exe",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run", "pyinstaller",
+                "--name", "mclib-template",
+                "--icon=assets/icon.ico",
+                "--onefile",
+                "src/mclib/template/application/cli.py"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build"
+            },
+            "options": {
+                "shell": {
+                    "executable": "powershell.exe",
+                    "args": [
+                        "-NoExit",
+                        "-Command"
+                    ]
+                },
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "direnv",
+            "type": "shell",
+            "command": ". ${workspaceFolder}/.envrc.ps1",
+            "problemMatcher": [],
+            "runOptions": {
+              "runOn": "folderOpen"  // Automatically runs on folder open
+            },
+            "windows": {
+              "command": ". ${workspaceFolder}/.envrc.ps1"
+            }
+        },
+    ],
+    "inputs": []
+}

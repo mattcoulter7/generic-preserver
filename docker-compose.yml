@@ -1,0 +1,58 @@
+version: '3'
+services:
+  mclib-sdk-python-template-cli:
+    image: mclib-sdk-python-template:latest
+    container_name: mclib-sdk-python-template-cli
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        GIT_USERNAME: ${GIT_USERNAME}
+        GIT_PAT: ${GIT_PAT}
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+    networks:
+      - mclib-sdk-python
+    entrypoint: ["poetry", "run", "mclib_template", "--help"]
+
+  mclib-sdk-python-template-test:
+    image: mclib-sdk-python-template:latest
+    container_name: mclib-sdk-python-template-test
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        GIT_USERNAME: ${GIT_USERNAME}
+        GIT_PAT: ${GIT_PAT}
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+    networks:
+      - mclib-sdk-python
+    entrypoint: ["pytest"]
+
+  mclib-sdk-python-template-test-with-debugging:
+    image: mclib-sdk-python-template:latest
+    container_name: mclib-sdk-python-template-test-with-debugging
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        GIT_USERNAME: ${GIT_USERNAME}
+        GIT_PAT: ${GIT_PAT}
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+    networks:
+      - mclib-sdk-python
+    ports:
+      - 5678:5678
+    entrypoint: [ "python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "pytest"]
+
+networks:
+  mclib-sdk-python:
+    driver: bridge
