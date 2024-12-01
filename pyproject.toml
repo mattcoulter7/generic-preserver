@@ -1,24 +1,14 @@
 [tool.poetry]
-name = "mclib-sdk-python-template"
-description = "Template repository for MCLib SDK Python Packages"
+name = "generic-preserver"
+description = "Extracting Generic Type References in Python"
 version = "0.1.0"
 authors = ["Matthew Coulter <mattcoul7@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "mclib", from = "src" }]
+packages = [{ include = "generic_preserver", from = "src" }]
 
 [tool.poetry.dependencies]
-python = ">=3.12,<3.14"
-typer = {version = "^0.12.5"}
-mclib-sdk-python-core = { git = "https://github.com/mattcoulter7/mclib-sdk-python-core.git", tag = "0.3.5", extras = [] }
+python = ">=3.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = {version = "^8.3.3"}
 debugpy = {version = "^1.8.6"}
-pyinstaller = {version = "^6.11.0"}
-mclib-sdk-python-core = { git = "https://github.com/mattcoulter7/mclib-sdk-python-core.git", tag = "0.3.5", extras = ["*"] }
-
-[tool.poetry.extras]
-"*" = []
-
-[tool.poetry.scripts]
-mclib_template = "mclib.template.application.cli:main"

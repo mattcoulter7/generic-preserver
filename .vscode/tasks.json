@@ -27,36 +27,6 @@
             }
         },
         {
-            "label": "Compile into .exe",
-            "type": "shell",
-            "command": "poetry",
-            "args": [
-                "run", "pyinstaller",
-                "--name", "mclib-template",
-                "--icon=assets/icon.ico",
-                "--onefile",
-                "src/mclib/template/application/cli.py"
-            ],
-            "problemMatcher": [],
-            "group": {
-                "kind": "build"
-            },
-            "options": {
-                "shell": {
-                    "executable": "powershell.exe",
-                    "args": [
-                        "-NoExit",
-                        "-Command"
-                    ]
-                },
-                "cwd": "${workspaceFolder}"
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            }
-        },
-        {
             "label": "direnv",
             "type": "shell",
             "command": ". ${workspaceFolder}/.envrc.ps1",
@@ -67,6 +37,22 @@
             "windows": {
               "command": ". ${workspaceFolder}/.envrc.ps1"
             }
+        },
+        {
+            "label": "Build using Poetry",
+            "type": "shell",
+            "command": "poetry build",
+            "group": {
+                "kind": "build"
+            },
+        },
+        {
+            "label": "Publish to PyPI using Poetry",
+            "type": "shell",
+            "command": "poetry publish",
+            "group": {
+                "kind": "build"
+            },
         },
     ],
     "inputs": []

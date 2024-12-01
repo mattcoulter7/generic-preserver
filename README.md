@@ -1,123 +1,267 @@
-# mclib-sdk-python-template
-This repository is a template for `mclib` packages, available both as a Command-Line Interface (CLI) and as a Python Package Dependency.
+# generic-preserver
 
-## Running the Application
-The CLI application can currently be run **three** different environments:
-- CLI
-- Windows Executable
-- Docker Container
+**Extracting Generic Type References in Python**
 
-Please ensure you system is setup with the following, for each environment respectively:
+## Introduction
 
-### Assumptions
-To run this application, we assume you have the following setup system environment setup already:
+In Python, generic types are a powerful feature for writing reusable and type-safe code. However, one limitation is that generic type arguments are typically not preserved at runtime, making it challenging to access or utilize these types dynamically. **`generic-preserver`** is a Python package that overcomes this limitation by capturing and preserving generic type arguments, allowing you to access them at runtime.
 
-1. For **CLI**:
-   - **Python version**: Ensure Python 3.12.x is installed:
-      ```bash
-      py -3.12 --version
-      ```
-   - **Pip installation**: Make sure pip is installed:
-      ```bash
-      py -3.12 -m ensurepip
-      ```
-   - **Update pip**: Upgrade pip to the latest version:
-      ```bash
-      py -3.12 -m pip install --upgrade pip
-      ```
-   - **Install Poetry**: Install the Poetry package manager:
-      ```bash
-      py -3.12 -m pip install poetry
-      ```
-2. For **[Optional] Docker (*for docker environment only*)**:
-   - **Docker**: Ensure Docker compose is available in the command line.
-   - **Docker Compose**: Ensure Docker compose is available in the command line.
-3. For **[Optional] Windows (*for Windows Executable environment only*)**:
-   - **Support for .exe**: Ensure you can run windows executables.
+This package is particularly useful when you need to perform operations based on the specific types used in your generic classes, such as serialization, deserialization, or dynamic type checking.
 
-### How to run the code
-Start by cloning this repository:
+## Features
+
+- **Preserve Generic Types at Runtime**: Capture and retain generic type arguments for classes and instances.
+- **Runtime Access to Type Parameters**: Easily access the type parameters passed to generic classes from their instances.
+- **Supports Inheritance and Nested Generics**: Works seamlessly with class hierarchies and nested generic types.
+- **Simple and Intuitive API**: Use either a metaclass or a decorator to enable functionality with minimal code changes.
+- **Python 3.9+ Support**: Leverages modern Python features for type hinting and annotations.
+
+## Installation
+
+Install `generic-preserver` via pip:
+
 ```bash
-git clone https://github.com/mattcoulter7/mclib-sdk-python-template
-cd mclib-sdk-python-template
+pip install generic-preserver
 ```
 
-#### CLI
-To run the CLI, first set up the environment:
+Or install using Poetry:
 
-1. **Install dependencies**: Install project dependencies:
-   ```bash
-   py -3.12 -m poetry install --with dev --extras *
-   ```
-
-Once the environment is set, you can explore the available commands by running:
 ```bash
-py -3.12 -m poetry run mclib_template --help
+poetry add generic-preserver
 ```
 
-To run the application in interactive mode:
-```bash
-py -3.12 -m poetry run mclib_template
-```
+## Requirements
 
-Alternatively, calculate the output with a single command:
-```bash
-py -3.12 -m poetry run mclib_template --input-1 some_string --input-2 0.
-```
+- Python 3.9 or higher
 
-#### Windows Executable
+## Usage
 
-For Windows users, the compiled executable is available for download from the zip file in the [latest release](https://github.com/mattcoulter7/mclib-sdk-python-template/releases).
+### Using the `GenericMeta` Metaclass
 
-After unzipping, run the executable and the cli will run in interactive mode.
+To enable capturing generic type arguments, use the `GenericMeta` metaclass in your base class definition.
 
-#### Docker Container
-
-You can also run the application within a Docker container:
-```bash
-docker compose -f docker-compose.yml up --build
-```
-*Note: The Docker container runs in non-interactive mode, and inputs are hardcoded in the Docker Compose file.*
-
----
-
-## Using this repository as a python package
-
-To incorporate this package into your own python application, add this package as a dependency via the Github link.
-
-### Installation
-
-Install the package using pip as a git dependency:
-```bash
-pip install "git+https://github.com/mattcoulter7/mclib-sdk-python-template@master"
-```
-
-If you are using poetry, you can specify this git dependency like so:
-```bash
-[tool.poetry.dependencies]
-mclib-sdk-python-template = { git = "https://github.com/mattcoulter7/mclib-sdk-python-template.git", tag= "0.1.0", extras = ["*"] }
-```
-
-### Usage Example
-Then, you can use the code like below
 ```python
-from mclib.template import ...
+from typing import TypeVar, Generic
+from generic_preserver.metaclass import GenericMeta
 
-# TODO
+# Define type variables
+A = TypeVar("A")
+B = TypeVar("B")
+C = TypeVar("C")
+
+# Example classes to use as type arguments
+class ExampleA:
+    pass
+
+class ExampleB:
+    pass
+
+class ExampleC:
+    pass
+
+# Base class with GenericMeta metaclass
+class Parent(Generic[A, B], metaclass=GenericMeta):
+    pass
+
+# Child classes specifying some generic type arguments
+class Child(Parent[ExampleA, B], Generic[B, C]):
+    pass
+
+class GrandChild(Child[ExampleB, C], Generic[C]):
+    pass
+
+# Create an instance of the generic class with type arguments
+instance = GrandChild[ExampleC]()
+
+# Access the preserved generic type arguments
+print(instance[A])  # Output: <class '__main__.ExampleA'>
+print(instance[B])  # Output: <class '__main__.ExampleB'>
+print(instance[C])  # Output: <class '__main__.ExampleC'>
+
+# View the internal generic map
+print(instance.__generic_map__)
+# Output:
+# {
+#     ~A: <class '__main__.ExampleA'>,
+#     ~B: <class '__main__.ExampleB'>,
+#     ~C: <class '__main__.ExampleC'>,
+# }
 ```
 
----
+### Using the `@generic_preserver` Decorator
 
-## Development
+Alternatively, use the `@generic_preserver` decorator to enable capturing generic arguments without explicitly specifying the metaclass.
 
-### Running Tests
+```python
+from typing import TypeVar, Generic
+from generic_preserver.wrapper import generic_preserver
 
-Tests are located in the `./tests` directory. To run the tests:
+# Define type variables
+A = TypeVar("A")
+B = TypeVar("B")
+C = TypeVar("C")
+
+# Example classes to use as type arguments
+class ExampleA:
+    pass
+
+class ExampleB:
+    pass
+
+class ExampleC:
+    pass
+
+# Use the decorator to enable generic preservation
+@generic_preserver
+class Parent(Generic[A, B]):
+    pass
+
+# Child classes specifying some generic type arguments
+class Child(Parent[ExampleA, B], Generic[B, C]):
+    pass
+
+class GrandChild(Child[ExampleB, C], Generic[C]):
+    pass
+
+# Create an instance of the generic class with type arguments
+instance = GrandChild[ExampleC]()
+
+# Access the preserved generic type arguments
+print(instance[A])  # Output: <class '__main__.ExampleA'>
+print(instance[B])  # Output: <class '__main__.ExampleB'>
+print(instance[C])  # Output: <class '__main__.ExampleC'>
+
+# View the internal generic map
+print(instance.__generic_map__)
+# Output:
+# {
+#     ~A: <class '__main__.ExampleA'>,
+#     ~B: <class '__main__.ExampleB'>,
+#     ~C: <class '__main__.ExampleC'>,
+# }
+```
+
+### Accessing Type Variables
+
+You can access the type arguments by indexing the instance with the corresponding `TypeVar`.
+
+```python
+print(instance[A])  # Output: <class '__main__.ExampleA'>
+```
+
+If you attempt to access a type variable that was not defined or is not in the generic map, a `KeyError` will be raised.
+
+```python
+D = TypeVar("D")
+try:
+    print(instance[D])
+except KeyError as e:
+    print(e)  # Output: No generic type found for generic arg ~D
+```
+
+### Accessing Multiple Type Variables
+
+You can retrieve multiple type variables at once by passing an iterable of `TypeVar` instances.
+
+```python
+types = instance[A, B, C]
+print(types)
+# Output: (<class '__main__.ExampleA'>, <class '__main__.ExampleB'>, <class '__main__.ExampleC'>)
+```
+
+## How It Works
+
+The `generic-preserver` package uses a custom metaclass `GenericMeta` to intercept class creation and capture generic type arguments when a generic class is subscripted (e.g., `MyClass[int, str]`). Here's a brief overview:
+
+- **Metaclass (`GenericMeta`)**: Overrides the `__getitem__` method to capture the type arguments and store them in a `__generic_map__`.
+- **Class Wrapper**: Creates a wrapper class that inherits from the original class and includes the `__generic_map__`.
+- **Instance Access**: Allows instances to access the type arguments via the `__getitem__` method.
+- **Decorator (`@generic_preserver`)**: Provides a convenient way to apply `GenericMeta` without altering the class definition directly.
+
+By preserving the generic type arguments in `__generic_map__`, you can access them at runtime, enabling more dynamic and type-aware programming patterns.
+
+## Testing
+
+The package includes a test suite to verify its functionality. To run the tests, first install the development dependencies:
+
+```bash
+poetry install --with dev
+```
+
+Then, run the tests using `pytest`:
+
 ```bash
 pytest
 ```
 
-Alternatively, you can run tests within a Docker container for a release build:
-```bash
-docker compose -f docker-compose.yml up --build
+An example test case is provided in `tests/test_wrapper.py`:
+
+```python
+def test_template():
+    A = TypeVar("A")
+    B = TypeVar("B")
+    C = TypeVar("C")
+
+    class ExampleA: pass
+    class ExampleB: pass
+    class ExampleC: pass
+
+    @generic_preserver
+    class Parent(Generic[A, B]): pass
+
+    class Child(Parent[ExampleA, B], Generic[B, C]): pass
+
+    class GrandChild(Child[ExampleB, C], Generic[C]): pass
+
+    instance = GrandChild[ExampleC]()
+
+    assert instance[A] is ExampleA
+    assert instance[B] is ExampleB
+    assert instance[C] is ExampleC
+
+    D = TypeVar("D")
+    with pytest.raises(KeyError):
+        instance[D]
 ```
+
+## Limitations
+
+- **Python Version**: Requires Python 3.9 or higher due to the use of internal structures from the `typing` module.
+- **Compatibility**: May not be compatible with other metaclass-based libraries or complex metaclass hierarchies.
+- **TypeVar Constraints**: Does not enforce `TypeVar` constraints or bounds at runtime; it only captures the types provided.
+
+## Contributing
+
+Contributions are welcome! If you find a bug or have an idea for a new feature, please open an issue or submit a pull request.
+
+To contribute:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/my-feature`).
+3. Commit your changes (`git commit -am 'Add my feature'`).
+4. Push to your branch (`git push origin feature/my-feature`).
+5. Open a Pull Request.
+
+Please ensure that your code passes all tests and follows the existing coding style.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+- Inspired by the need to access and utilize generic type parameters at runtime in Python applications.
+- Special thanks to the Python community for their contributions and support.
+
+To learn more about how I came up with this solution, please read my blog post: [Extracting Generic Type References in Python](https://mica-twig-c4c.notion.site/Extracting-Generic-Type-References-in-Python-14c04289061f802b851ae564e80c251e)
+
+## Contact
+
+For questions, suggestions, or feedback, please contact:
+
+Matthew Coulter  
+Email: [mattcoul7@gmail.com](mailto:mattcoul7@gmail.com)
+
+---
+
+Thank you for using `generic-preserver`! If you find this package helpful, consider giving it a star on GitHub.
