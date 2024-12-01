@@ -36,7 +36,7 @@ jobs:
         env:
           POETRY_HTTP_BASIC_PYPI_USERNAME: __token__
           POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-          POETRY_HTTP_TIMEOUT: 300
+          POETRY_REQUESTS_TIMEOUT: 300
         run: |
           poetry build
           poetry publish
