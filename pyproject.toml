@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "generic-preserver"
 description = "Extracting Generic Type References in Python"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Matthew Coulter <mattcoul7@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "generic_preserver", from = "src" }]
