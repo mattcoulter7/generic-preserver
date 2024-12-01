@@ -2,6 +2,9 @@ from .metaclass import GenericMeta
 from .utils import (
     copy_class_metadata,
 )
+from .conflict_management import (
+    build_combined_metaclass_from_cls,
+)
 
 
 def generic_preserver(cls):
@@ -58,8 +61,15 @@ def generic_preserver(cls):
     >> KeyError(...)
     ```
     """
+    # avoid conflict by dynamically creating a metaclass that
+    # groups its base metaclasses (if necessary)
+    CombinedMetaclass = build_combined_metaclass_from_cls(
+        cls,
+        custom_metaclasses=[GenericMeta],
+    )
+    
     # Dynamically create a new class using the GenericMeta metaclass
-    class Wrapped(cls, metaclass=GenericMeta):
+    class Wrapped(cls, metaclass=CombinedMetaclass):
         ...
 
     copy_class_metadata(Wrapped, cls)
