@@ -1,6 +1,6 @@
 # generic-preserver
 
-<img src="assets/logo.webp" alt="logo" width="500">
+<img src="https://github.com/mattcoulter7/generic-preserver/raw/master/assets/logo.webp" alt="logo" width="500">
 
 **Extracting Generic Type References in Python**
 
