@@ -1,3 +1,5 @@
+from typing import TypeVar
+
 from .metaclass import GenericMeta
 from .utils import (
     copy_class_metadata,
@@ -6,8 +8,9 @@ from .conflict_management import (
     build_combined_metaclass_from_cls,
 )
 
+T = TypeVar("T", bound=type)
 
-def generic_preserver(cls):
+def generic_preserver(cls: T) -> T:
     """
     A decorator that enables capturing generic arguments.
     _(Skips needing to provide the explicit `metaclass=GenericMeta` parameter in class definition)_
