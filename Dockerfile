@@ -28,7 +28,7 @@ RUN pip install --no-cache-dir poetry
 COPY pyproject.toml ./
 
 # Install dependencies
-RUN poetry install --with dev --extras "*" --no-root
+RUN poetry install --with dev --no-root
 
 # Copy the necessary files and directories
 COPY ./ ./
@@ -39,7 +39,7 @@ COPY ./ ./
 #       enables us to cache the docker layer for installing dependencies.
 #       otherwise, each time the application code is updated, it would
 #       need to re install all of the dependencies...
-RUN poetry install --with dev --extras "*"
+RUN poetry install --with dev
 
 # run pytest
 CMD ["pytest"]
