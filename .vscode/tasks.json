@@ -31,12 +31,9 @@
             "type": "shell",
             "command": ". ${workspaceFolder}/.envrc.ps1",
             "problemMatcher": [],
-            "runOptions": {
-              "runOn": "folderOpen"  // Automatically runs on folder open
+            "group": {
+                "kind": "build"
             },
-            "windows": {
-              "command": ". ${workspaceFolder}/.envrc.ps1"
-            }
         },
         {
             "label": "Build using Poetry",
