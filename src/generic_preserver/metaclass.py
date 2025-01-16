@@ -70,7 +70,7 @@ class GenericMeta(type):
     def __getitem__(cls, item):
         # establish parameters as an iterable
         type_references = item
-        if not isinstance(type_references, Iterable):
+        if not isinstance(type_references, tuple):
             type_references = (type_references, )
 
         # ensure it is generic
@@ -119,7 +119,7 @@ class GenericMeta(type):
                 whilst preserving any other implementations of __getitem__
                 """
                 # support multi retrieval ExampleA, ExampleB = self[A, B]
-                if isinstance(item, Iterable):
+                if isinstance(item, tuple):
                     return tuple(self[child_item] for child_item in item)
 
                 if item in self.__generic_map__:
