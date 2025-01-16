@@ -5,13 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "cli",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "src/mclib/template/application/cli.py",
-      "console": "integratedTerminal"
-    },
-    {
       "name": "pytest",
       "type": "python",
       "request": "launch",
