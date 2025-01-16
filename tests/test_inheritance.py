@@ -34,12 +34,25 @@ def test_template():
 
     instance = GrandChild[ExampleC]()
 
+    # check single type extraction
     assert instance[A] is ExampleA
     assert instance[B] is ExampleB
     assert instance[C] is ExampleC
+
+    # check multi type extraction
+    assert instance[A, B, C] == (ExampleA, ExampleB, ExampleC)
 
     # check invalid type through a KeyError
     D = TypeVar("D")
     with pytest.raises(KeyError) as exc_info:
         # Code that should raise the exception
         instance[D]
+
+    # check generic of generic
+    class ExampleD(Generic[D]): pass
+
+    instance_2 = Parent[ExampleA, ExampleD[ExampleB]]()
+
+    assert instance_2[A] is ExampleA
+    assert instance_2[B] is ExampleD[ExampleB]
+    assert instance_2[A, B] == (ExampleA, ExampleD[ExampleB])
