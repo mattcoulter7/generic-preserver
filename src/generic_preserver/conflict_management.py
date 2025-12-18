@@ -5,10 +5,7 @@ from typing import (
 )
 
 
-def get_metaclasses(
-    cls: Type,
-    seen=None
-) -> List[Type]:
+def get_metaclasses(cls: Type, seen=None) -> List[Type]:
     """
     Retrieves a list of metaclasses used by cls and its base classes,
     preserving order and avoiding duplicates.
@@ -30,9 +27,7 @@ def get_metaclasses(
             seen.add(base_meta)
             metaclasses.append(base_meta)
             # Recursively collect metaclasses from base classes
-            metaclasses.extend(
-                m for m in get_metaclasses(base, seen) if m not in seen
-            )
+            metaclasses.extend(m for m in get_metaclasses(base, seen) if m not in seen)
 
     return metaclasses
 
@@ -55,12 +50,7 @@ def build_combined_metaclass(
     # Remove duplicates while preserving order and exclude 'type'
     seen = set()
     metaclasses = [
-        m for m in metaclasses
-        if (
-            m not in seen
-            and not seen.add(m)
-            and m is not type
-        )
+        m for m in metaclasses if (m not in seen and not seen.add(m) and m is not type)
     ]
 
     # If there's only one metaclass, return it directly
@@ -70,11 +60,7 @@ def build_combined_metaclass(
     # Attempt to create a combined metaclass
     try:
         # The name 'CombinedMeta' is arbitrary and can be adjusted
-        return type(
-            'CombinedMeta',
-            tuple(metaclasses),
-            {}
-        )
+        return type("CombinedMeta", tuple(metaclasses), {})
 
     except TypeError as e:
         # Metaclass conflict occurred

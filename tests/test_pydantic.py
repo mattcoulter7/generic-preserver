@@ -15,7 +15,9 @@ def test():
     D = TypeVar("D")
 
     class ExampleA(BaseModel): ...
+
     class ExampleB(BaseModel): ...
+
     class ExampleC(BaseModel): ...
 
     @generic_preserver
@@ -33,8 +35,7 @@ def test():
             return self[B]
 
         @abstractmethod
-        def do_something(self) -> str:
-            ...
+        def do_something(self) -> str: ...
 
     class Child(Parent[ExampleA, B], Generic[B, C]):
         child_extra: C

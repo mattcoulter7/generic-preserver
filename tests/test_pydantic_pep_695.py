@@ -8,7 +8,9 @@ from generic_preserver.wrapper import generic_preserver
 
 def test():
     class ExampleA(BaseModel): ...
+
     class ExampleB(BaseModel): ...
+
     class ExampleC(BaseModel): ...
 
     @generic_preserver
@@ -26,8 +28,7 @@ def test():
             return self[B]
 
         @abstractmethod
-        def do_something(self) -> str:
-            ...
+        def do_something(self) -> str: ...
 
     class Child[B, C](Parent[ExampleA, B]):
         child_extra: C
@@ -63,6 +64,7 @@ def test():
 
     # invalid lookup still raises KeyError
     class D: ...
+
     with pytest.raises(KeyError):
         instance[D]
 
@@ -102,4 +104,3 @@ def test():
             sample=ExampleA(),
             meta=ExampleD[ExampleB](value="not ExampleB"),
         )
-
