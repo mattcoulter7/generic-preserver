@@ -12,3 +12,4 @@ python = ">=3.9"
 [tool.poetry.group.dev.dependencies]
 pytest = {version = "^8.3.3"}
 debugpy = {version = "^1.8.6"}
+pydantic = "^2.12.5"
