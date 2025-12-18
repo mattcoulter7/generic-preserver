@@ -1,5 +1,3 @@
-import pytest
-
 from typing import (
     TypeVar,
     Generic,
