@@ -1,8 +1,11 @@
 from typing import get_args
 from typing import Any
+
+from .pydantic_support import specialise_pydantic_generic
 from .utils import (
     copy_class_metadata,
     is_generic_type,
+    canonical_key,
 )
 
 
@@ -58,6 +61,7 @@ class GenericMeta(type):
     >> KeyError(...)
     ```
     """
+
     def __call__(cls, *args, **kwargs):
         # Check if the class was parameterized
         if not hasattr(cls, "__generic_map__"):
@@ -68,10 +72,15 @@ class GenericMeta(type):
         return super().__call__(*args, **kwargs)
 
     def __getitem__(cls, item):
+        # First, let the Pydantic integration handle BaseModel subclasses.
+        submodel = specialise_pydantic_generic(cls, item)
+        if submodel is not None:
+            return submodel
+
         # establish parameters as an iterable
-        type_references = item
-        if not isinstance(type_references, tuple):
-            type_references = (type_references, )
+        args = item
+        if not isinstance(args, tuple):
+            args = (args,)
 
         # ensure it is generic
         if not hasattr(cls, "__orig_bases__"):
@@ -82,8 +91,7 @@ class GenericMeta(type):
         # lookup the generic base
         try:
             generic_base = next(
-                base for base in cls.__orig_bases__
-                if is_generic_type(base)
+                base for base in cls.__orig_bases__ if is_generic_type(base)
             )
         except StopIteration as e:
             # no generics in this class
@@ -92,26 +100,15 @@ class GenericMeta(type):
             ) from e
 
         # lookup required arguments
-        type_vars = get_args(generic_base)
-        if len(type_vars) != len(type_references):
+        params = get_args(generic_base)
+        if len(params) != len(args):
             raise RuntimeError(
-                f"Incorrect number of type parameters passed. Expected ({len(type_vars)}): {repr(type_vars)}, but received ({len(type_references)}): {repr(type_references)}"
+                f"Incorrect number of type parameters passed. Expected ({len(params)}): {repr(params)}, but received ({len(args)}): {repr(args)}"
             )
 
         # looking up existing generic map to ensure we still capture
         # generics from super class
         existing_generic_map = getattr(cls, "__generic_map__", {})
-
-        def canonical_key(tp: Any) -> Any:
-            """
-            Produce a stable key for a type parameter.
-
-            - For TypeVar / PEP 695 type parameters: use their name
-              (`.__name__` or `.name`).
-            - For non-type-parameters: just use the object itself.
-            """
-            name = getattr(tp, "__name__", None)
-            return name if name is not None else tp
 
         def resolve_type_reference(ref: Any) -> Any:
             """
@@ -127,8 +124,8 @@ class GenericMeta(type):
 
         # Build the new mapping for this specialisation
         new_entries = {
-            canonical_key(param): resolve_type_reference(type_ref)
-            for param, type_ref in zip(type_vars, type_references)
+            canonical_key(param): resolve_type_reference(arg)
+            for param, arg in zip(params, args)
         }
 
         # Create the specialised class that remembers all resolved bindings
@@ -137,6 +134,7 @@ class GenericMeta(type):
             A specialised generic that preserves the type arguments in
             `__generic_map__`.
             """
+
             __generic_map__ = {**existing_generic_map, **new_entries}
 
             def __getitem__(self, item: Any):

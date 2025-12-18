@@ -1,5 +1,3 @@
-import pytest
-
 from typing import (
     TypeVar,
     Generic,
@@ -12,15 +10,15 @@ from generic_preserver.wrapper import generic_preserver
 def test():
     T = TypeVar("T")
 
-    class ExampleT: pass
+    class ExampleT:
+        pass
 
     @generic_preserver
-    class AbstractBase(
-        Generic[T],
-        ABC
-    ): pass
+    class AbstractBase(Generic[T], ABC):
+        pass
 
-    class Variant1(AbstractBase[ExampleT]): pass
+    class Variant1(AbstractBase[ExampleT]):
+        pass
 
     instance = Variant1()
 

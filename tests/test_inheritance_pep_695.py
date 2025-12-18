@@ -7,7 +7,9 @@ from generic_preserver.wrapper import generic_preserver
 
 def test():
     class ExampleA: ...
+
     class ExampleB: ...
+
     class ExampleC: ...
 
     @generic_preserver

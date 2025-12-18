@@ -15,24 +15,24 @@ def test():
     B = TypeVar("B")
     C = TypeVar("C")
 
-    class ExampleA: pass
-    class ExampleB: pass
-    class ExampleC: pass
+    class ExampleA:
+        pass
+
+    class ExampleB:
+        pass
+
+    class ExampleC:
+        pass
 
     @generic_preserver
-    class Parent(
-        Generic[A, B]
-    ): pass
+    class Parent(Generic[A, B]):
+        pass
 
-    class Child(
-        Parent[ExampleA, B],
-        Generic[B, C]
-    ): pass
+    class Child(Parent[ExampleA, B], Generic[B, C]):
+        pass
 
-    class GrandChild(
-        Child[ExampleB, C],
-        Generic[C]
-    ): pass
+    class GrandChild(Child[ExampleB, C], Generic[C]):
+        pass
 
     instance = GrandChild[ExampleC]()
 
@@ -51,7 +51,8 @@ def test():
         instance[D]
 
     # check generic of generic
-    class ExampleD(Generic[D]): pass
+    class ExampleD(Generic[D]):
+        pass
 
     instance_2 = Parent[ExampleA, ExampleD[ExampleB]]()
 
