@@ -1,5 +1,5 @@
-from typing import Iterable, get_args
-
+from typing import get_args
+from typing import Any
 from .utils import (
     copy_class_metadata,
     is_generic_type,
@@ -85,11 +85,11 @@ class GenericMeta(type):
                 base for base in cls.__orig_bases__
                 if is_generic_type(base)
             )
-        except StopIteration:
+        except StopIteration as e:
             # no generics in this class
             raise RuntimeError(
                 f"Unable to find generic argument in class `{repr(cls)}`"
-            )
+            ) from e
 
         # lookup required arguments
         type_vars = get_args(generic_base)
@@ -100,38 +100,68 @@ class GenericMeta(type):
 
         # looking up existing generic map to ensure we still capture
         # generics from super class
-        existing_generic_map = cls.__generic_map__ if hasattr(cls, "__generic_map__") else {}
+        existing_generic_map = getattr(cls, "__generic_map__", {})
 
-        # create the class wrapper, which stores the generic instances mapped to type vars
+        def canonical_key(tp: Any) -> Any:
+            """
+            Produce a stable key for a type parameter.
+
+            - For TypeVar / PEP 695 type parameters: use their name
+              (`.__name__` or `.name`).
+            - For non-type-parameters: just use the object itself.
+            """
+            name = getattr(tp, "__name__", None)
+            return name if name is not None else tp
+
+        def resolve_type_reference(ref: Any) -> Any:
+            """
+            If the type argument is itself a type parameter that already has
+            a concrete binding in `existing_generic_map`, return that binding.
+
+            This is the critical bit that fixes your PEP 695 issue where
+            `B` was ending up bound to *another* type parameter instead of the
+            final concrete type.
+            """
+            key = canonical_key(ref)
+            return existing_generic_map.get(key, ref)
+
+        # Build the new mapping for this specialisation
+        new_entries = {
+            canonical_key(param): resolve_type_reference(type_ref)
+            for param, type_ref in zip(type_vars, type_references)
+        }
+
+        # Create the specialised class that remembers all resolved bindings
         class PreservedGeneric(cls):
             """
-            A Special Kind of Generic which preserves the type references passed
-            into the generic
+            A specialised generic that preserves the type arguments in
+            `__generic_map__`.
             """
-            __generic_map__ = existing_generic_map | {
-                var: type_ref
-                for var, type_ref in zip(type_vars, type_references)
-            }
+            __generic_map__ = {**existing_generic_map, **new_entries}
 
-            def __getitem__(self, item):
+            def __getitem__(self, item: Any):
                 """
-                Tries to retrieve the type from __generic_map__ if available,
-                whilst preserving any other implementations of __getitem__
+                Resolve generic parameters from `__generic_map__`, with support
+                for multi-lookup: `self[A, B]`.
                 """
-                # support multi retrieval ExampleA, ExampleB = self[A, B]
+                # Support e.g. ExampleA, ExampleB = self[A, B]
                 if isinstance(item, tuple):
                     return tuple(self[child_item] for child_item in item)
 
-                if item in self.__generic_map__:
-                    return self.__generic_map__[item]
-                
+                key = canonical_key(item)
+
+                if key in self.__generic_map__:
+                    return self.__generic_map__[key]
+
+                # Fall back to other __getitem__ implementations, if any
                 try:
                     return super().__getitem__(item)
-                except AttributeError:
+                except AttributeError as e:
                     raise KeyError(
                         f"No generic type found for generic arg {repr(item)}"
-                    )
+                    ) from e
 
+        # Preserve basic metadata (name, qualname, etc.)
         copy_class_metadata(PreservedGeneric, cls)
 
         return PreservedGeneric
