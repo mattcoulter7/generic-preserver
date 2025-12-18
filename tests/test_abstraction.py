@@ -9,7 +9,7 @@ from abc import ABC
 from generic_preserver.wrapper import generic_preserver
 
 
-def test_template():
+def test():
     T = TypeVar("T")
 
     class ExampleT: pass

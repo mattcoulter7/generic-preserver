@@ -1,9 +1,11 @@
+"""Testing compatibility with python Generics >=3.12."""
+
 import pytest
 
 from generic_preserver.wrapper import generic_preserver
 
 
-def test_template():
+def test():
     class ExampleA: ...
     class ExampleB: ...
     class ExampleC: ...

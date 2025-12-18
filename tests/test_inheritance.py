@@ -1,3 +1,5 @@
+"""Testing compatibility with python Generics >=3.5,<3.12."""
+
 import pytest
 
 from typing import (
@@ -8,7 +10,7 @@ from typing import (
 from generic_preserver.wrapper import generic_preserver
 
 
-def test_template():
+def test():
     A = TypeVar("A")
     B = TypeVar("B")
     C = TypeVar("C")
@@ -44,7 +46,7 @@ def test_template():
 
     # check invalid type through a KeyError
     D = TypeVar("D")
-    with pytest.raises(KeyError) as exc_info:
+    with pytest.raises(KeyError):
         # Code that should raise the exception
         instance[D]
 
